@@ -1,81 +1,70 @@
 package app
 
-import logo.logo
-import react.RBuilder
-import react.RComponent
-import react.RProps
-import react.RState
-import react.dom.code
-import react.dom.div
+import boiler.boiler
+import kotlinx.css.*
+import parameter.Parameter
+import parameter.parameterElement
+import react.*
 import react.dom.h2
 import react.dom.p
+import styled.css
+import styled.styledDiv
 import ticker.ticker
 
-interface AppState : RState {
-    var requiredWaterLevel: NumberParameter /*[m]*/
-    var requiredWaterTemperature: NumberParameter /*[°C]*/
-    var requiredWaterOutflow: NumberParameter /*[m3/s]*/
+interface AppProps : RProps {
+    var parameters: Array<Parameter>
 }
 
-const val requiredWaterLevelID = "requiredWaterLevel"
+interface AppState : RState {
+    var values: DoubleArray
+}
 
-class App : RComponent<RProps, AppState>() {
+class App(props: AppProps) : RComponent<AppProps, AppState>(props) {
+    override fun AppState.init(props: AppProps) {
+        values = props.parameters.map { it.toDouble() }.toDoubleArray()
+    }
+
     override fun RBuilder.render() {
-        div("App-header") {
-            logo()
+        styledDiv {
+            css {
+                height = 60.px
+                padding(20.px)
+                backgroundColor = Color("#0096ff")
+                color = Color.white
+            }
             h2 {
                 +"Boiler Simulator"
             }
         }
-        div {
-            p {
-                parameter {
-                    name = "Required Water Level: "
-                    minValue = 0.0
-                    maxValue = 100.0
-                }
-            }
-            p {
-                parameter {
-                    name = "Required Water Temperature: "
-                    minValue = 40.0
-                    maxValue = 60.0
-                }
-            }
-            p {
-                parameter {
-                    name = "Required Water Outflow: "
-                    minValue = 0.0
-                    maxValue = 100.0
-                }
-            }
-        }
-
-        /*div {
-            boiler {
-                crossSectionArea = 10.0
-                waterInflowMax = 100.0
-                waterInflowTemperature = 10.0
-                heaterPowerMax = 1000.0
-                heaterEfficiency = 0.9
-                initialWaterLevel = 0.0
-                initialWaterTemperature = 0.0
-                timeStep = 60.0
-                requiredWaterLevel = state.requiredWaterLevel
-                requiredWaterTemperature = state.requiredWaterTemperature
-                requiredWaterOutflow = state.requiredWaterOutflow
+        /*div("App-header") {
+//            logo()
+            h2 {
+                +"Boiler Simulator"
             }
         }*/
 
-        p("App-intro") {
-            +"To get started, edit "
-            code { +"app/App.kt" }
-            +" and save to reload."
+        styledDiv {
+            css {
+                width = 20.pct
+                float = Float.left
+            }
+
+            props.parameters.forEachIndexed { i, p ->
+                parameterElement {
+                    parameter = p
+                    onValueChanged = { setState { values[i] = p.toDouble() } }
+                }
+            }
         }
+
+        boiler {
+            boilerParameters = state.values
+        }
+
         p("App-ticker") {
             ticker()
         }
     }
 }
 
-fun RBuilder.app() = child(App::class) {}
+fun RBuilder.app(handler: AppProps.() -> Unit) = child(App::class) { attrs(handler) }

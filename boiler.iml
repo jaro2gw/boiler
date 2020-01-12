@@ -28,5 +28,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="kotlin-css-js" level="project" />
+    <orderEntry type="library" name="kotlin-styled" level="project" />
   </component>
 </module>

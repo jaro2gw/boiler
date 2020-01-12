@@ -3,8 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@jetbrains/kotlin-css": "^1.0.0-pre.89",
+    "@jetbrains/kotlin-css-js": "^1.0.0-pre.89",
+    "@jetbrains/kotlin-styled": "^1.0.0-pre.89",
+    "inline-style-prefixer": "^5.1.0",
     "react": "^16.12.0",
-    "react-dom": "^16.12.0"
+    "react-dom": "^16.12.0",
+    "styled-components": "4"
   },
   "devDependencies": {
     "react-scripts-kotlin": "4.0.2"
