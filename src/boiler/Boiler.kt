@@ -12,6 +12,7 @@ import react.dom.div
 import react.dom.p
 import styled.css
 import styled.styledDiv
+import ticker.ticker
 import kotlin.browser.window
 import kotlin.math.max
 import kotlin.math.min
@@ -196,6 +197,10 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
             p { +"HEATER POWER: ${state.currentPower.twoDecimalPlaces()}" }
             p { +"WATER INFLOW: ${state.currentInflow.twoDecimalPlaces()}" }
             p { +"WATER OUTFLOW: ${state.currentOutflow.twoDecimalPlaces()}" }
+        }
+
+        p("App-ticker") {
+            ticker()
         }
     }
 }

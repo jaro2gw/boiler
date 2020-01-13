@@ -6,10 +6,8 @@ import parameter.Parameter
 import parameter.parameterElement
 import react.*
 import react.dom.h2
-import react.dom.p
 import styled.css
 import styled.styledDiv
-import ticker.ticker
 
 interface AppProps : RProps {
     var parameters: Array<Parameter>
@@ -32,16 +30,8 @@ class App(props: AppProps) : RComponent<AppProps, AppState>(props) {
                 backgroundColor = Color("#0096ff")
                 color = Color.white
             }
-            h2 {
-                +"Boiler Simulator"
-            }
+            h2 { +"Boiler Simulator" }
         }
-        /*div("App-header") {
-//            logo()
-            h2 {
-                +"Boiler Simulator"
-            }
-        }*/
 
         styledDiv {
             css {
@@ -57,13 +47,7 @@ class App(props: AppProps) : RComponent<AppProps, AppState>(props) {
             }
         }
 
-        boiler {
-            boilerParameters = state.values
-        }
-
-        p("App-ticker") {
-            ticker()
-        }
+        boiler { boilerParameters = state.values }
     }
 }
 
