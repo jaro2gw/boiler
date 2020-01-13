@@ -1,4 +1,4 @@
-package parameter
+package boiler.parameter
 
 import kotlinx.css.*
 import kotlinx.html.js.onClickFunction
@@ -7,14 +7,12 @@ import react.RComponent
 import react.RProps
 import react.RState
 import react.dom.br
-import react.dom.code
 import styled.css
 import styled.styledButton
 import styled.styledDiv
 
 interface ParameterProps : RProps {
     var parameter: Parameter
-    var onValueChanged: () -> Unit
 }
 
 class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RState>(props) {
@@ -26,40 +24,28 @@ class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RStat
                 margin(10.px)
             }
 
-            code { +"${props.parameter.name} [${props.parameter.unit}]:" }
+            +"${props.parameter.name} [${props.parameter.unit}]:"
             br { }
 
             styledButton {
-                css {
-                    float = Float.left
-                    overflow = Overflow.auto
-                }
+                css { float = Float.left }
                 +"-"
                 attrs {
-                    disabled = props.parameter.curValue <= props.parameter.minValue
-                    onClickFunction = {
-                        --props.parameter.curValue
-                        props.onValueChanged()
-                    }
+                    disabled = props.parameter.reachedMin()
+                    onClickFunction = { props.parameter.dec() }
                 }
             }
 
             styledButton {
-                css {
-                    float = Float.right
-                    overflow = Overflow.auto
-                }
+                css { float = Float.right }
                 +"+"
                 attrs {
-                    disabled = props.parameter.curValue >= props.parameter.maxValue
-                    onClickFunction = {
-                        ++props.parameter.curValue
-                        props.onValueChanged()
-                    }
+                    disabled = props.parameter.reachedMax()
+                    onClickFunction = { props.parameter.inc() }
                 }
             }
 
-            code { +"${props.parameter.toDouble().twoDecimalPlaces()}" }
+            +"${props.parameter.toDouble().twoDecimalPlaces()}"
         }
     }
 }

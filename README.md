@@ -33,7 +33,7 @@ my-app/
       Logo.css
       Logo.kt
       react.svg
-    ticker/
+    boiler.timer/
       Ticker.kt
 ```
 

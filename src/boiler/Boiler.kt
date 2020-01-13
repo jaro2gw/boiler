@@ -1,18 +1,20 @@
 package boiler
 
+import boiler.parameter.Parameter
+import boiler.parameter.parameterElement
+import boiler.parameter.twoDecimalPlaces
 import kotlinx.css.Float
 import kotlinx.css.float
 import kotlinx.css.pct
 import kotlinx.css.width
-import parameter.Parameter
-import parameter.parameterElement
-import parameter.twoDecimalPlaces
+import kotlinx.html.js.onClickFunction
 import react.*
 import react.dom.div
 import react.dom.p
 import styled.css
+import styled.styledButton
 import styled.styledDiv
-import ticker.ticker
+import utils.StatisticsList
 import kotlin.browser.window
 import kotlin.math.max
 import kotlin.math.min
@@ -20,14 +22,14 @@ import kotlin.math.min
 const val waterSpecificHeat = 4200.0 /*[J/(kg*°C)]*/
 
 interface BoilerProps : RProps {
-    var boilerParameters: DoubleArray
+//    var initialState: Array<Parameter>
 }
 
 interface BoilerState : RState {
-    var timeStep: Parameter /*[s]*/
-    var requiredLevel: Parameter /*[m]*/
-    var requiredTemperature: Parameter /*[°C]*/
-    var requiredOutflow: Parameter /*[m3/s]*/
+    var parameters: Array<Parameter>
+    var requirements: Array<Parameter>
+
+    var count: Long
 
     var currentLevel: Double /*[m]*/
     var currentTemperature: Double /*[°C]*/
@@ -38,51 +40,71 @@ interface BoilerState : RState {
 }
 
 class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
-    private val crossSectionArea: Double get() = props.boilerParameters[0] /*[m2]*/
-    private val inflowMax: Double get() = props.boilerParameters[1] /*[m3/s]*/
-    private val inflowTemperature: Double get() = props.boilerParameters[2] /*[°C]*/
-    private val heaterPowerMax: Double get() = props.boilerParameters[3] /*[W]*/
-    private val heaterEfficiency: Double get() = props.boilerParameters[4] /*[%]*/
-    private val energyDrainCoefficient: Double get() = props.boilerParameters[5] /*[W]*/
-    private val initialWaterLevel: Double get() = props.boilerParameters[6] /*[m]*/
-    private val initialWaterTemperature: Double get() = props.boilerParameters[7] /*[°C]*/
+    private val requiredLevel get() = state.requirements[0].normalized() /*[m]*/
+    private val requiredTemperature get() = state.requirements[1].normalized()/*[°C]*/
+    private val requiredOutflow get() = state.requirements[2].normalized() /*[l/s]*/
+
+    private val crossSectionArea get() = state.parameters[0].normalized() /*[m2]*/
+    private val inflowMax get() = state.parameters[1].normalized() /*[m3/s]*/
+    private val inflowTemperature get() = state.parameters[2].normalized() /*[°C]*/
+    private val heaterPowerMax get() = state.parameters[3].normalized() /*[W]*/
+    private val heaterEfficiency get() = state.parameters[4].normalized() /*[%]*/
+    private val energyDrainCoefficient get() = state.parameters[5].normalized() /*[W]*/
+
+    private val timeStepParameter get() = state.parameters[6]
+    private val timeStep get() = timeStepParameter.normalized().toLong() /*[s]*/
+
     private val refreshTimeout = 100
     private val refreshRate = 1000.0 / refreshTimeout
-    private val actualTimeStep: Double get() = state.timeStep.toDouble() / refreshRate
+    private val actualTimeStep: Double get() = timeStep / refreshRate
+
+    private var timeStepID: Int? = null
     private var timerID: Int? = null
 
-    override fun componentDidMount() {
-        timerID = window.setInterval({
-            calculateNewState()
-        }, refreshTimeout)
+    private fun setIntervals() {
+        timeStepID = window.setInterval({ calculateNewState() }, refreshTimeout)
+        timerID = window.setInterval({ setState { count += timeStep } }, 1000)
     }
 
-    override fun componentWillUnmount() {
-        window.clearInterval(timerID!!)
+    private fun clearIntervals() {
+        timeStepID?.let { window.clearInterval(it) }
+        timerID?.let { window.clearInterval(it) }
     }
 
-    private fun BoilerState.update() {
-        currentLevel = initialWaterLevel
-        currentTemperature = initialWaterTemperature
+    override fun componentDidMount() = setIntervals()
+
+    override fun componentWillUnmount() = clearIntervals()
+
+    private fun BoilerState.reset() {
+        count = 0
+        currentLevel = 0.0
+        currentTemperature = 0.0
         currentInflow = 0.0
         currentOutflow = 0.0
         currentPower = 0.0
     }
 
     override fun BoilerState.init(props: BoilerProps) {
-        update()
-        timeStep = Parameter("Time Step", "s", 1, 60)
-        requiredLevel = Parameter("Required Water Level", "m", 0, 20, 0.1)
-        requiredTemperature = Parameter("Required Water Temperature", "°C", 40, 60)
-        requiredOutflow = Parameter("Required Water Outflow", "m3/s", 0, 25, 0.01)
-    }
+        parameters = arrayOf(
+                Parameter(name = "Cross Section Area", unit = "m2", minValue = 10, maxValue = 100, scale = 0.1, curValue = 10),
+                Parameter(name = "Max Inflow", unit = "l/s", minValue = 1, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001),
+                Parameter(name = "Inflow Temperature", unit = "°C", minValue = 5, maxValue = 15),
+                Parameter(name = "Max Heater Power", unit = "kW", minValue = 1, maxValue = 12, scale = 0.5, normalizationCoefficient = 1000.0),
+                Parameter(name = "Heater Efficiency", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
+                Parameter(name = "Energy Drain Coefficient", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
+                Parameter(name = "Time Step", unit = "s", minValue = 1, maxValue = 60, scale = 60.0, curValue = 1)
+        )
 
-    override fun componentWillReceiveProps(nextProps: BoilerProps) {
-        state.update()
+        requirements = arrayOf(
+                Parameter(name = "Required Water Level", unit = "m", minValue = 0, maxValue = 20, scale = 0.1),
+                Parameter(name = "Required Water Temperature", unit = "°C", minValue = 40, maxValue = 60),
+                Parameter(name = "Required Water Outflow", unit = "l/s", minValue = 0, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001, curValue = 0)
+        )
+
+        reset()
     }
 
     private fun waterDensity(temperature: Double): Double /*[kg/m3]*/ {
-        //TODO maybe improve how the water density is calculated
         require(temperature >= 0)
         return when {
             temperature < 4  -> 999.8
@@ -105,7 +127,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
     private fun calculateLevelAndTemperature(): Pair<Double, Double> {
         val suppliedVolume = state.currentInflow * actualTimeStep /*[m3/s * s = m3]*/
         val suppliedMass = suppliedVolume * waterDensity(inflowTemperature) /*[m3 * kg/m3 = kg]*/
-        val suppliedEnergy = waterSpecificHeat * suppliedMass * inflowTemperature + state.currentPower * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
+        val suppliedEnergy = waterSpecificHeat * suppliedMass * inflowTemperature + state.currentPower * heaterEfficiency * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
 
         val drainedVolume = state.currentOutflow * actualTimeStep /*[m3/s * s = m3]*/
         val drainedMass = drainedVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
@@ -120,12 +142,20 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         return newLevel to newTemperature
     }
 
-    private fun calculateInflowAndPower(): Triple<Double, Double, Double> {
-        val requiredVolume = state.requiredLevel.toDouble() * crossSectionArea /*[m * m2 = m3]*/
-        val requiredMass = requiredVolume * waterDensity(state.requiredTemperature.toDouble()) /*[m3 * kg/m3 = kg]*/
-        val requiredEnergy = waterSpecificHeat * requiredMass * state.requiredTemperature.toDouble() /*[J/(kg*°C) * kg * °C = J]*/
+    private val levelStats = StatisticsList()
+    private val temperatureStats = StatisticsList()
 
-        val outflowVolume = state.requiredOutflow.toDouble() * actualTimeStep /*[m3/s * s = m3]*/
+    private fun calculateFlowAndPower2(): Triple<Double, Double, Double> {
+
+        return Triple(0.0, 0.0, 0.0)
+    }
+
+    private fun calculateFlowAndPower(): Triple<Double, Double, Double> {
+        val requiredVolume = requiredLevel * crossSectionArea /*[m * m2 = m3]*/
+        val requiredMass = requiredVolume * waterDensity(requiredTemperature) /*[m3 * kg/m3 = kg]*/
+        val requiredEnergy = waterSpecificHeat * requiredMass * requiredTemperature /*[J/(kg*°C) * kg * °C = J]*/
+
+        val outflowVolume = requiredOutflow * actualTimeStep /*[m3/s * s = m3]*/
         val outflowMass = outflowVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
 
         val actualOutflowVolume = min(outflowVolume, currentVolume) /*[m3]*/
@@ -155,7 +185,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
             currentLevel = level
             currentTemperature = temperature
         }
-        val (inflow, outflow, power) = calculateInflowAndPower()
+        val (inflow, outflow, power) = calculateFlowAndPower()
         setState {
             currentInflow = inflow
             currentOutflow = outflow
@@ -163,48 +193,38 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         }
     }
 
-    override fun RBuilder.render() {
+    private fun RBuilder.parameterArray(floatSide: Float, parameters: Array<Parameter>) {
         styledDiv {
             css {
                 width = 20.pct
-                float = Float.right
+                float = floatSide
             }
 
-            parameterElement {
-                parameter = state.requiredLevel
-                onValueChanged = { setState { } }
-            }
-
-            parameterElement {
-                parameter = state.requiredTemperature
-                onValueChanged = { setState { } }
-            }
-
-            parameterElement {
-                parameter = state.requiredOutflow
-                onValueChanged = { setState { } }
-            }
-
-            parameterElement {
-                parameter = state.timeStep
-                onValueChanged = { setState { } }
-            }
+            parameters.forEach { parameterElement { parameter = it } }
         }
+    }
+
+    override fun RBuilder.render() {
+        parameterArray(Float.left, state.parameters)
+        parameterArray(Float.right, state.requirements)
 
         div {
             p { +"WATER LEVEL: ${state.currentLevel.twoDecimalPlaces()}" }
             p { +"WATER TEMPERATURE: ${state.currentTemperature.twoDecimalPlaces()}" }
             p { +"HEATER POWER: ${state.currentPower.twoDecimalPlaces()}" }
-            p { +"WATER INFLOW: ${state.currentInflow.twoDecimalPlaces()}" }
-            p { +"WATER OUTFLOW: ${state.currentOutflow.twoDecimalPlaces()}" }
+            p { +"WATER INFLOW: ${state.currentInflow.times(1000).twoDecimalPlaces()}" }
+            p { +"WATER OUTFLOW: ${state.currentOutflow.times(1000).twoDecimalPlaces()}" }
+            p("App-boiler.ticker") {
+                +"The boiler has been running for ${state.count} seconds"
+//                ticker { timeStep = timeStepParameter }
+            }
         }
 
-        p("App-ticker") {
-            ticker()
+        styledButton {
+            +"RESET"
+            attrs.onClickFunction = { setState { reset() } }
         }
     }
 }
 
-fun RBuilder.boiler(handler: BoilerProps.() -> Unit) = child(Boiler::class) {
-    attrs(handler)
-}
+fun RBuilder.boiler(handler: BoilerProps.() -> Unit) = child(Boiler::class) { attrs(handler) }

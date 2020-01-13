@@ -1,15 +1,15 @@
 package utils
 
-abstract class LimitedList<T>(private var capacity: Int) : Iterable<T> {
+open class LimitedList<T>(private var capacity: Int) : Iterable<T> {
     init {
         require(capacity > 0)
     }
 
     private var size: Int = 0
 
-    abstract fun removeItem(t: T)
+    open fun onItemRemoved(t: T) {}
 
-//    fun getSize() = size
+    open fun onItemAppended(t: T) {}
 
     private class Node<T>(val t: T, var next: Node<T>? = null)
 
@@ -19,15 +19,18 @@ abstract class LimitedList<T>(private var capacity: Int) : Iterable<T> {
     private var tail: Node<T>? = null
 
     // returns removed element (the oldest one) if the size were to exceed capacity
-    open fun append(t: T) {
+    fun append(t: T) {
         val node = Node(t)
         if (size == 0) head = node
         else tail?.next = node
         tail = node
 
+        onItemAppended(t)
+
         if (size == capacity) {
-            head?.t?.let { removeItem(it) }
+            val item = head?.t
             head = head?.next
+            item?.let { onItemRemoved(it) }
         } else ++size
     }
 
