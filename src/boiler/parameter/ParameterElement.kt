@@ -1,25 +1,30 @@
 package boiler.parameter
 
 import kotlinx.css.*
+import kotlinx.css.properties.border
 import kotlinx.html.js.onClickFunction
 import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
 import react.dom.br
+import react.dom.code
 import styled.css
 import styled.styledButton
 import styled.styledDiv
 
 interface ParameterProps : RProps {
     var parameter: Parameter
+    var backgroundColor: Color
 }
 
 class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RState>(props) {
     override fun RBuilder.render() {
         styledDiv {
             css {
-                backgroundColor = Color.aliceBlue
+                textAlign = TextAlign.center
+                backgroundColor = props.backgroundColor
+                border(2.px, BorderStyle.solid, props.backgroundColor.darken(50), 5.px)
                 padding(10.px)
                 margin(10.px)
             }

@@ -24,6 +24,6 @@ fun main() {
             h2 { +"Boiler Simulator" }
         }
 
-        boiler {}
+        boiler { fluidSpecificHeat = 4200.0 }
     }
 }

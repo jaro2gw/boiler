@@ -2,7 +2,7 @@ package boiler.parameter
 
 import kotlin.math.roundToInt
 
-data class Parameter(
+class Parameter(
         val name: String,
         val unit: String,
         val minValue: Int,
