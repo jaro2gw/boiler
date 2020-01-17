@@ -7,7 +7,6 @@ import kotlinx.css.*
 import kotlinx.css.properties.border
 import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.div
 import react.dom.p
 import react.dom.strong
 import styled.css
@@ -18,7 +17,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 interface BoilerProps : RProps {
-    var fluidSpecificHeat: Double /*[J/(kg*°C)]*/
+    var specificHeatCapacity: Double /*[J/(kg*°C)]*/
 }
 
 interface BoilerState : RState {
@@ -129,20 +128,20 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
 
     private val currentVolume: Double get() = state.currentLevel * crossSectionArea /*[m * m2 = m3]*/
     private val currentMass: Double get() = currentVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
-    private val currentEnergy: Double get() = props.fluidSpecificHeat * currentMass * state.currentTemperature /*[J/(kg*°C) * kg * °C = J]*/
+    private val currentEnergy: Double get() = props.specificHeatCapacity * currentMass * state.currentTemperature /*[J/(kg*°C) * kg * °C = J]*/
 
     private fun calculateLevelAndTemperature(): Pair<Double, Double> {
         val suppliedVolume = state.currentInflow * actualTimeStep /*[m3/s * s = m3]*/
         val suppliedMass = suppliedVolume * waterDensity(inflowTemperature) /*[m3 * kg/m3 = kg]*/
-        val suppliedEnergy = props.fluidSpecificHeat * suppliedMass * inflowTemperature + state.currentPower * heaterEfficiency * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
+        val suppliedEnergy = props.specificHeatCapacity * suppliedMass * inflowTemperature + state.currentPower * heaterEfficiency * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
 
         val drainedVolume = state.currentOutflow * actualTimeStep /*[m3/s * s = m3]*/
         val drainedMass = drainedVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
-        val drainedEnergy = props.fluidSpecificHeat * drainedMass * state.currentTemperature + energyDrainCoefficient * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
+        val drainedEnergy = props.specificHeatCapacity * drainedMass * state.currentTemperature + energyDrainCoefficient * actualTimeStep /*[J/(kg*°C) * kg * °C + W * s = J]*/
 
         val newMass = max(suppliedMass + currentMass - drainedMass, 0.0) /*[kg]*/
         val newEnergy = max(currentEnergy + suppliedEnergy - drainedEnergy, 0.0) /*[J]*/
-        val newTemperature = if (newMass == 0.0) 0.0 else newEnergy / props.fluidSpecificHeat / newMass /*[J * (kg*°C) / J / kg = °C]*/
+        val newTemperature = if (newMass == 0.0) 0.0 else newEnergy / props.specificHeatCapacity / newMass /*[J * (kg*°C) / J / kg = °C]*/
         val newVolume = newMass / waterDensity(state.currentTemperature) /*[kg * m3/kg = m3]*/
         val newLevel = newVolume / crossSectionArea /*[m3 / m2 = m]*/
 
@@ -152,14 +151,14 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
     private fun calculateFlowAndPower(): Triple<Double, Double, Double> {
         val requiredVolume = requiredLevel * crossSectionArea /*[m * m2 = m3]*/
         val requiredMass = requiredVolume * waterDensity(requiredTemperature) /*[m3 * kg/m3 = kg]*/
-        val requiredEnergy = props.fluidSpecificHeat * requiredMass * requiredTemperature /*[J/(kg*°C) * kg * °C = J]*/
+        val requiredEnergy = props.specificHeatCapacity * max(requiredMass, currentMass) * requiredTemperature /*[J/(kg*°C) * kg * °C = J]*/
 
         val outflowVolume = requiredOutflow * actualTimeStep /*[m3/s * s = m3]*/
         val outflowMass = outflowVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
 
         val actualOutflowVolume = min(outflowVolume, currentVolume) /*[m3]*/
         val actualOutflowMass = actualOutflowVolume * waterDensity(state.currentTemperature) /*[m3 * kg/m3 = kg]*/
-        val actualOutflowEnergy = props.fluidSpecificHeat * actualOutflowMass * state.currentTemperature /*[J/(kg*°C) * kg * °C]*/
+        val actualOutflowEnergy = props.specificHeatCapacity * actualOutflowMass * state.currentTemperature /*[J/(kg*°C) * kg * °C]*/
         val actualOutflow = actualOutflowVolume / actualTimeStep /*[m3 / s]*/
 
         val requiredInflowMass = max(requiredMass - currentMass + outflowMass, 0.0) /*[kg]*/
@@ -169,7 +168,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         val actualInflow = min(requiredInflow, inflowMax) /*[m3/s]*/
         val actualInflowVolume = actualInflow * actualTimeStep /*[m3/s * s = m3]*/
         val actualInflowMass = actualInflowVolume * waterDensity(inflowTemperature) /*[m3 * kg/m3 = kg]*/
-        val actualInflowEnergy = props.fluidSpecificHeat * actualInflowMass * inflowTemperature /*[J/(kg*°C) * kg * °C = J]*/
+        val actualInflowEnergy = props.specificHeatCapacity * actualInflowMass * inflowTemperature /*[J/(kg*°C) * kg * °C = J]*/
 
         val requiredEnergyIncome = max(requiredEnergy - currentEnergy + actualOutflowEnergy - actualInflowEnergy + energyDrainCoefficient * actualTimeStep, 0.0) /*[J]*/
         val requiredPower = requiredEnergyIncome / actualTimeStep / heaterEfficiency /*[J / s = W]*/
@@ -241,45 +240,54 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         }
     }
 
-    private fun RBuilder.parameterArray(name: String, side: Float, color: Color, vararg parameters: Parameter) {
+    private fun RBuilder.parameterArray(name: String, side: String, background: Color, parameters: Array<Parameter>) {
         styledDiv {
             css {
+                float = Float.valueOf(side)
+                clear = Clear.valueOf(side)
+                backgroundColor = background.lighten(20)
                 width = 20.pct
-                float = side
-                backgroundColor = color.lighten(25)
-                border(2.px, BorderStyle.solid, Color.black, 10.px)
                 margin(10.px)
                 padding(10.px)
+                border(2.px, BorderStyle.solid, Color.black, 10.px)
             }
 
             strong { +"$name:" }
-
             parameters.forEach {
                 parameterElement {
                     parameter = it
-                    backgroundColor = color
+                    color = background
                 }
             }
         }
     }
 
     override fun RBuilder.render() {
-        parameterArray("Parameters", Float.left, Color.lightSkyBlue, *state.attributes)
-        parameterArray("Requirements", Float.right, Color.lightSteelBlue, *state.requirements)
+        parameterArray("Parameters", "left", Color.lightSkyBlue, state.attributes)
+        parameterArray("Requirements", "right", Color.lightSteelBlue, state.requirements)
         /*parameterArray(???, *state.regulations)*/
+        styledDiv {
+            css {
+                float = Float.left
+                width=51.pct
+                margin(10.px)
+                padding(10.px)
+                color = Color.white
+                border(2.px, BorderStyle.solid, Color.black, 10.px)
+                backgroundColor = Color.cornflowerBlue
+            }
 
-        div {
-            p { +"WATER LEVEL: ${state.currentLevel.twoDecimalPlaces()} [m]" }
-            p { +"WATER TEMPERATURE: ${state.currentTemperature.twoDecimalPlaces()} [°C]" }
-            p { +"HEATER POWER: ${state.currentPower.twoDecimalPlaces()} [W]" }
-            p { +"WATER INFLOW: ${state.currentInflow.times(1000).twoDecimalPlaces()} [l/s]" }
-            p { +"WATER OUTFLOW: ${state.currentOutflow.times(1000).twoDecimalPlaces()} [l/s]" }
+            p { +"Water Level: ${state.currentLevel.twoDecimalPlaces()} [m]" }
+            p { +"Water Temperature: ${state.currentTemperature.twoDecimalPlaces()} [°C]" }
+            p { +"Heater Power: ${state.currentPower.twoDecimalPlaces()} [W]" }
+            p { +"Water Inflow: ${state.currentInflow.times(1000).twoDecimalPlaces()} [l/s]" }
+            p { +"Water Outflow: ${state.currentOutflow.times(1000).twoDecimalPlaces()} [l/s]" }
             p("App-boiler.ticker") { +"The boiler has been running for ${state.simulationTime} [s]" }
-        }
 
-        styledButton {
-            +"RESET"
-            attrs.onClickFunction = { setState { reset() } }
+            styledButton {
+                +"RESET"
+                attrs.onClickFunction = { setState { reset() } }
+            }
         }
     }
 }

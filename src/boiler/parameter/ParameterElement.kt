@@ -8,14 +8,13 @@ import react.RComponent
 import react.RProps
 import react.RState
 import react.dom.br
-import react.dom.code
 import styled.css
 import styled.styledButton
 import styled.styledDiv
 
 interface ParameterProps : RProps {
     var parameter: Parameter
-    var backgroundColor: Color
+    var color: Color
 }
 
 class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RState>(props) {
@@ -23,8 +22,8 @@ class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RStat
         styledDiv {
             css {
                 textAlign = TextAlign.center
-                backgroundColor = props.backgroundColor
-                border(2.px, BorderStyle.solid, props.backgroundColor.darken(50), 5.px)
+                backgroundColor = props.color
+                border(2.px, BorderStyle.solid, props.color.darken(50), 5.px)
                 padding(10.px)
                 margin(10.px)
             }
