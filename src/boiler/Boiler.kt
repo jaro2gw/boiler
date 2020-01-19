@@ -3,14 +3,15 @@ package boiler
 import boiler.parameter.Parameter
 import boiler.parameter.parameterElement
 import boiler.parameter.twoDecimalPlaces
-import kotlinx.css.*
-import kotlinx.css.properties.border
+import kotlinx.css.Color
+import kotlinx.css.backgroundColor
 import kotlinx.html.js.onClickFunction
 import react.*
+import react.dom.button
+import react.dom.div
 import react.dom.p
 import react.dom.strong
 import styled.css
-import styled.styledButton
 import styled.styledDiv
 import kotlin.browser.window
 import kotlin.math.max
@@ -240,16 +241,11 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         }
     }
 
-    private fun RBuilder.parameterArray(name: String, side: String, background: Color, parameters: Array<Parameter>) {
+    private fun RBuilder.parameterArray(name: String, background: Color, parameters: Array<Parameter>) {
         styledDiv {
             css {
-                float = Float.valueOf(side)
-                clear = Clear.valueOf(side)
+                classes.plusAssign("bordered-element")
                 backgroundColor = background.lighten(20)
-                width = 20.pct
-                margin(10.px)
-                padding(10.px)
-                border(2.px, BorderStyle.solid, Color.black, 10.px)
             }
 
             strong { +"$name:" }
@@ -263,31 +259,22 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
     }
 
     override fun RBuilder.render() {
-        parameterArray("Parameters", "left", Color.lightSkyBlue, state.attributes)
-        parameterArray("Requirements", "right", Color.lightSteelBlue, state.requirements)
-        /*parameterArray(???, *state.regulations)*/
-        styledDiv {
-            css {
-                float = Float.left
-                width=51.pct
-                margin(10.px)
-                padding(10.px)
-                color = Color.white
-                border(2.px, BorderStyle.solid, Color.black, 10.px)
-                backgroundColor = Color.cornflowerBlue
-            }
+        div("grid-container") {
+            parameterArray("Parameters", Color.lightSkyBlue, state.attributes)
+            div("bordered-element") {
+                p { +"Water Level: ${state.currentLevel.twoDecimalPlaces()} [m]" }
+                p { +"Water Temperature: ${state.currentTemperature.twoDecimalPlaces()} [°C]" }
+                p { +"Heater Power: ${state.currentPower.twoDecimalPlaces()} [W]" }
+                p { +"Water Inflow: ${state.currentInflow.times(1000).twoDecimalPlaces()} [l/s]" }
+                p { +"Water Outflow: ${state.currentOutflow.times(1000).twoDecimalPlaces()} [l/s]" }
+                p("App-boiler.ticker") { +"The boiler has been running for ${state.simulationTime} [s]" }
 
-            p { +"Water Level: ${state.currentLevel.twoDecimalPlaces()} [m]" }
-            p { +"Water Temperature: ${state.currentTemperature.twoDecimalPlaces()} [°C]" }
-            p { +"Heater Power: ${state.currentPower.twoDecimalPlaces()} [W]" }
-            p { +"Water Inflow: ${state.currentInflow.times(1000).twoDecimalPlaces()} [l/s]" }
-            p { +"Water Outflow: ${state.currentOutflow.times(1000).twoDecimalPlaces()} [l/s]" }
-            p("App-boiler.ticker") { +"The boiler has been running for ${state.simulationTime} [s]" }
-
-            styledButton {
-                +"RESET"
-                attrs.onClickFunction = { setState { reset() } }
+                button {
+                    +"RESET"
+                    attrs.onClickFunction = { setState { reset() } }
+                }
             }
+            parameterArray("Requirements", Color.lightSteelBlue, state.requirements)
         }
     }
 }

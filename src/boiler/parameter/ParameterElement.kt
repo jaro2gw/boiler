@@ -1,7 +1,6 @@
 package boiler.parameter
 
 import kotlinx.css.*
-import kotlinx.css.properties.border
 import kotlinx.html.js.onClickFunction
 import react.RBuilder
 import react.RComponent
@@ -21,11 +20,11 @@ class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RStat
     override fun RBuilder.render() {
         styledDiv {
             css {
+                classes.plusAssign("bordered-element")
                 textAlign = TextAlign.center
                 backgroundColor = props.color
-                border(2.px, BorderStyle.solid, props.color.darken(50), 5.px)
-                padding(10.px)
-                margin(10.px)
+                borderRadius = 5.px
+                borderColor = props.color.darken(50)
             }
 
             +"${props.parameter.name} [${props.parameter.unit}]:"

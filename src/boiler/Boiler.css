@@ -1,0 +1,16 @@
+.grid-container {
+    padding-left: 10px;
+    padding-right: 10px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 20% auto 20%;
+}
+
+.bordered-element {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+}
