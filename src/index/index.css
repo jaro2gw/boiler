@@ -1,6 +1,13 @@
 body {
     margin: 0;
     padding: 0;
-    text-align: center;
     font-family: sans-serif;
+}
+
+.header {
+    text-align: center;
+    height: 60px;
+    padding: 20px;
+    background-color: cornflowerblue;
+    color: papayawhip;
 }
