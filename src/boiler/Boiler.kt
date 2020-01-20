@@ -8,8 +8,8 @@ import kotlinx.css.backgroundColor
 import kotlinx.html.js.onClickFunction
 import react.*
 import react.dom.button
+import react.dom.code
 import react.dom.div
-import react.dom.p
 import react.dom.strong
 import styled.css
 import styled.styledDiv
@@ -85,7 +85,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                 Parameter(name = "Cross Section Area", unit = "m2", minValue = 10, maxValue = 20, scale = 0.1, curValue = 10),
                 Parameter(name = "Max Inflow", unit = "l/s", minValue = 1, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001),
                 Parameter(name = "Inflow Temperature", unit = "°C", minValue = 5, maxValue = 15),
-                Parameter(name = "Max Heater Power", unit = "kW", minValue = 1, maxValue = 12, scale = 0.5, normalizationCoefficient = 1000.0),
+                Parameter(name = "Max Heater Power", unit = "W", minValue = 1, maxValue = 12, scale = 500.0),
                 Parameter(name = "Heater Efficiency", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
                 Parameter(name = "Energy Drain Coefficient", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
                 Parameter(name = "Time Step", unit = "s", minValue = 1, maxValue = 60, scale = 60.0, curValue = 1)
@@ -258,19 +258,27 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         }
     }
 
+    private fun RBuilder.row(name: String, value: Double, unit: String) {
+        div("name") { +"$name:" }
+        div("value") { code("bigger") { +value.twoDecimalPlaces().toString() } }
+        div("unit") { +"[$unit]" }
+    }
+
     override fun RBuilder.render() {
         div("grid-container") {
             parameterArray("Parameters", Color.lightSkyBlue, state.attributes)
             div("bordered-element") {
-                p { +"Water Level: ${state.currentLevel.twoDecimalPlaces()} [m]" }
-                p { +"Water Temperature: ${state.currentTemperature.twoDecimalPlaces()} [°C]" }
-                p { +"Heater Power: ${state.currentPower.twoDecimalPlaces()} [W]" }
-                p { +"Water Inflow: ${state.currentInflow.times(1000).twoDecimalPlaces()} [l/s]" }
-                p { +"Water Outflow: ${state.currentOutflow.times(1000).twoDecimalPlaces()} [l/s]" }
-                p("App-boiler.ticker") { +"The boiler has been running for ${state.simulationTime} [s]" }
+                div("grid-state") {
+                    row("Water Level", state.currentLevel, "m")
+                    row("Water Temperature", state.currentTemperature, "°C")
+                    row("Heater Power", state.currentPower, "W")
+                    row("Water Inflow", state.currentInflow.times(1000), "l/s")
+                    row("Water Outflow", state.currentOutflow.times(1000), "l/s")
+                    row("Boiler runtime", state.simulationTime.toDouble(), "s")
+                }
 
                 button {
-                    +"RESET"
+                    code { +"RESET" }
                     attrs.onClickFunction = { setState { reset() } }
                 }
             }

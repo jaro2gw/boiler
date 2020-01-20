@@ -7,6 +7,8 @@ import react.RComponent
 import react.RProps
 import react.RState
 import react.dom.br
+import react.dom.code
+import react.dom.small
 import styled.css
 import styled.styledButton
 import styled.styledDiv
@@ -27,12 +29,13 @@ class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RStat
                 borderColor = props.color.darken(50)
             }
 
-            +"${props.parameter.name} [${props.parameter.unit}]:"
+            small { +"${props.parameter.name} [${props.parameter.unit}]:" }
             br { }
 
             styledButton {
                 css { float = Float.left }
-                +"-"
+                code { +"-" }
+//                code { +"-${props.parameter.scale}" }
                 attrs {
                     disabled = props.parameter.reachedMin()
                     onClickFunction = { props.parameter.dec() }
@@ -41,14 +44,15 @@ class ParameterElement(props: ParameterProps) : RComponent<ParameterProps, RStat
 
             styledButton {
                 css { float = Float.right }
-                +"+"
+                code { +"+" }
+//                code { +"+${props.parameter.scale}" }
                 attrs {
                     disabled = props.parameter.reachedMax()
                     onClickFunction = { props.parameter.inc() }
                 }
             }
 
-            +"${props.parameter.toDouble().twoDecimalPlaces()}"
+            code("bigger") { +"${props.parameter.toDouble().twoDecimalPlaces()}" }
         }
     }
 }

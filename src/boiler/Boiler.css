@@ -14,3 +14,27 @@
     border-width: 2px;
     border-color: black;
 }
+
+.bigger {
+    font-size: 1.25em;
+}
+
+.grid-state {
+    padding: 10px;
+    margin: 10px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 20% 10% 5%;
+}
+
+.name {
+    text-align: left;
+}
+
+.value {
+    text-align: left;
+}
+
+.unit {
+    text-align: center;
+}
