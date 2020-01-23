@@ -1,5 +1,6 @@
 package boiler
 
+import boiler.canvas.boilerCanvas
 import boiler.parameter.Parameter
 import boiler.parameter.parameterElement
 import boiler.parameter.twoDecimalPlaces
@@ -268,19 +269,31 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         div("grid-container") {
             parameterArray("Parameters", Color.lightSkyBlue, state.attributes)
             div("bordered-element") {
-                div("grid-state") {
-                    row("Water Level", state.currentLevel, "m")
-                    row("Water Temperature", state.currentTemperature, "°C")
-                    row("Heater Power", state.currentPower, "W")
-                    row("Water Inflow", state.currentInflow.times(1000), "l/s")
-                    row("Water Outflow", state.currentOutflow.times(1000), "l/s")
-                    row("Boiler runtime", state.simulationTime.toDouble(), "s")
+                div("grid-boiler") {
+                    div {
+                        div("grid-state") {
+                            row("Water Level", state.currentLevel, "m")
+                            row("Water Temperature", state.currentTemperature, "°C")
+                            row("Heater Power", state.currentPower, "W")
+                            row("Water Inflow", state.currentInflow.times(1000), "l/s")
+                            row("Water Outflow", state.currentOutflow.times(1000), "l/s")
+                            row("Boiler runtime", state.simulationTime.toDouble(), "s")
+                        }
+                        button {
+                            code { +"RESET" }
+                            attrs.onClickFunction = { setState { reset() } }
+                        }
+                    }
+                    boilerCanvas {
+                        level = state.currentLevel
+                        temperature = state.currentTemperature
+                        power = state.currentPower
+                        inflow = state.currentInflow
+                        inflowTemperature = this@Boiler.inflowTemperature
+                        outflow = state.currentOutflow
+                    }
                 }
 
-                button {
-                    code { +"RESET" }
-                    attrs.onClickFunction = { setState { reset() } }
-                }
             }
             parameterArray("Requirements", Color.lightSteelBlue, state.requirements)
         }

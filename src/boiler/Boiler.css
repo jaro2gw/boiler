@@ -19,12 +19,18 @@
     font-size: 1.25em;
 }
 
+.grid-boiler {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 35% auto;
+}
+
 .grid-state {
     padding: 10px;
     margin: 10px;
     display: grid;
     gap: 10px;
-    grid-template-columns: 20% 10% 5%;
+    grid-template-columns: auto 20% 10%;
 }
 
 .name {
@@ -32,9 +38,9 @@
 }
 
 .value {
-    text-align: left;
+    text-align: center;
 }
 
 .unit {
-    text-align: center;
+    text-align: right;
 }
