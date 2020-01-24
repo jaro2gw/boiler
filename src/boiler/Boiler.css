@@ -22,7 +22,15 @@
 .grid-boiler {
     display: grid;
     gap: 10px;
-    grid-template-columns: 35% auto;
+    grid-template-columns: auto 50%;
+}
+
+.grid-timer {
+    padding: 10px;
+    margin: 10px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: auto 10% 10% 10% 10%;
 }
 
 .grid-state {

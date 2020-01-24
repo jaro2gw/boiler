@@ -46,8 +46,7 @@ class Canvas : RComponent<CanvasProps, RState>() {
     override fun RBuilder.render() {
         styledCanvas {
             css {
-                width = 400.px
-                height = 400.px
+                classes.plusAssign("boiler-canvas")
                 border(2.px, BorderStyle.solid, Color.black)
             }
             attrs.id = "myCanvas"

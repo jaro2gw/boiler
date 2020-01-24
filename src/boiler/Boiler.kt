@@ -265,6 +265,18 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         div("unit") { +"[$unit]" }
     }
 
+    private fun RBuilder.timer() {
+        val hours = state.simulationTime / 3600
+        val minutes = state.simulationTime % 3600 / 60
+        div("grid-timer") {
+            div("name") { +"Boiler Runtime:" }
+            div("value") { code("bigger") { if (hours > 0) +hours.toString() } }
+            div("unit") { if (hours > 0) +"[h]" }
+            div("value") { code("bigger") { +minutes.toString() } }
+            div("unit") { +"[min]" }
+        }
+    }
+
     override fun RBuilder.render() {
         div("grid-container") {
             parameterArray("Parameters", Color.lightSkyBlue, state.attributes)
@@ -277,8 +289,8 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                             row("Heater Power", state.currentPower, "W")
                             row("Water Inflow", state.currentInflow.times(1000), "l/s")
                             row("Water Outflow", state.currentOutflow.times(1000), "l/s")
-                            row("Boiler runtime", state.simulationTime.toDouble(), "s")
                         }
+                        timer()
                         button {
                             code { +"RESET" }
                             attrs.onClickFunction = { setState { reset() } }
