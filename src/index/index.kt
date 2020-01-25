@@ -12,7 +12,7 @@ fun main() {
     requireAll(require.context("src", true, js("/\\.css$/")))
 
     render(document.getElementById("root")) {
-        div("header") { h2 { +"Boiler Simulator" } }
+        div("header") { h2 { +"Symulator Pracy Bojlera" } }
         boiler { specificHeatCapacity = 4200.0 }
     }
 }
