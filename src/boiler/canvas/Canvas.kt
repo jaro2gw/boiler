@@ -1,7 +1,9 @@
 package boiler.canvas
 
-import kotlinx.css.*
+import kotlinx.css.BorderStyle
+import kotlinx.css.Color
 import kotlinx.css.properties.border
+import kotlinx.css.px
 import kotlinx.html.id
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -34,6 +36,8 @@ class Canvas : RComponent<CanvasProps, RState>() {
         timerID?.let { window.clearInterval(it) }
     }
 
+    private fun color(temperature: Double): String = "rgb(${(temperature + 20) * 2.56}, 0, ${(80 - temperature) * 2.56})"
+
     private fun repaint() {
         val canvas = document.getElementById("myCanvas") as? HTMLCanvasElement
         with(canvas?.getContext("2d")!! as CanvasRenderingContext2D) {
@@ -41,7 +45,7 @@ class Canvas : RComponent<CanvasProps, RState>() {
             val height = canvas.height.toDouble()
             clearRect(0.0, 0.0, width, height)
             lineWidth = 1.0
-            fillStyle = "blue"
+            fillStyle = color(props.temperature)
             fillRect(0.0, height * (1 - props.level / 2), width, height)
         }
     }
