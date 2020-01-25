@@ -34,12 +34,28 @@ class Canvas : RComponent<CanvasProps, RState>() {
         timerID?.let { window.clearInterval(it) }
     }
 
+
     private fun repaint() {
         val canvas = document.getElementById("myCanvas") as? HTMLCanvasElement
         with(canvas?.getContext("2d")!! as CanvasRenderingContext2D) {
             clearRect(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
+            var fillY = canvas.height.toDouble() - canvas.height.toDouble() * props.level
             lineWidth = 1.0
-            fillText(props.level.toString(), 50.0, 50.0)
+            fillStyle = "blue"
+            fun draw(){
+                save()
+                clip()
+                fillStyle = "blue"
+                fillRect(0.0, fillY, canvas.width.toDouble(), canvas.height.toDouble())
+                restore()
+            }
+            fun animateFill(){
+                draw()
+                window.requestAnimationFrame { animateFill() }
+            }
+            fillRect(0.0, canvas.height.toDouble() - canvas.height.toDouble() * props.level/2, canvas.width.toDouble(), canvas.height.toDouble() * props.level)
+            window.requestAnimationFrame { animateFill() }
+//            fillText(props.level.toString(), 50.0, 50.0)
         }
     }
 
