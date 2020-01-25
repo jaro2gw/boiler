@@ -83,19 +83,19 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
 
     override fun BoilerState.init(props: BoilerProps) {
         attributes = arrayOf(
-                Parameter(name = "Cross Section Area", unit = "m2", minValue = 10, maxValue = 20, scale = 0.1, curValue = 10),
-                Parameter(name = "Max Inflow", unit = "l/s", minValue = 1, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001),
-                Parameter(name = "Inflow Temperature", unit = "°C", minValue = 5, maxValue = 15),
-                Parameter(name = "Max Heater Power", unit = "W", minValue = 1, maxValue = 12, scale = 500.0),
-                Parameter(name = "Heater Efficiency", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
-                Parameter(name = "Energy Drain Coefficient", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
-                Parameter(name = "Time Step", unit = "s", minValue = 1, maxValue = 60, scale = 60.0, curValue = 1)
+                Parameter(name = "Obszar przekroju", unit = "m2", minValue = 10, maxValue = 20, scale = 0.1, curValue = 10),
+                Parameter(name = "Dopływ wody", unit = "l/s", minValue = 1, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001),
+                Parameter(name = "Temperatura wody z dopływu", unit = "°C", minValue = 5, maxValue = 15),
+                Parameter(name = "Moc grzałki", unit = "W", minValue = 1, maxValue = 12, scale = 500.0),
+                Parameter(name = "Sprawność grzałki", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
+                Parameter(name = "Współczynnik straty energii", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
+                Parameter(name = "Krok czasu", unit = "s", minValue = 1, maxValue = 60, scale = 60.0, curValue = 1)
         )
 
         requirements = arrayOf(
-                Parameter(name = "Water Level", unit = "m", minValue = 0, maxValue = 20, scale = 0.1),
-                Parameter(name = "Water Temperature", unit = "°C", minValue = 40, maxValue = 60),
-                Parameter(name = "Water Outflow", unit = "l/s", minValue = 0, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001, curValue = 0)
+                Parameter(name = "Poziom wody", unit = "m", minValue = 0, maxValue = 20, scale = 0.1),
+                Parameter(name = "Temperatura wody", unit = "°C", minValue = 40, maxValue = 60),
+                Parameter(name = "Odpływ wody", unit = "l/s", minValue = 0, maxValue = 15, scale = 0.1, normalizationCoefficient = 0.001, curValue = 0)
         )
 
         /*regulations = arrayOf(
@@ -279,16 +279,17 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
 
     override fun RBuilder.render() {
         div("grid-container") {
-            parameterArray("Parameters", Color.lightSkyBlue, state.attributes)
+            parameterArray("Parametry", Color.lightSkyBlue, state.attributes)
             div("bordered-element") {
                 div("grid-boiler") {
                     div {
                         div("grid-state") {
-                            row("Water Level", state.currentLevel, "m")
-                            row("Water Temperature", state.currentTemperature, "°C")
-                            row("Heater Power", state.currentPower, "W")
-                            row("Water Inflow", state.currentInflow.times(1000), "l/s")
-                            row("Water Outflow", state.currentOutflow.times(1000), "l/s")
+                            row("Poziom wody", state.currentLevel, "m")
+                            row("Temperatura wody", state.currentTemperature, "°C")
+                            row("Moc grzałki", state.currentPower, "W")
+                            row("Dopływ wody", state.currentInflow.times(1000), "l/s")
+                            row("Odpływ wody", state.currentOutflow.times(1000), "l/s")
+                            row("Czas pracy bojlera", state.simulationTime.toDouble(), "s")
                         }
                         timer()
                         button {
@@ -307,7 +308,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                 }
 
             }
-            parameterArray("Requirements", Color.lightSteelBlue, state.requirements)
+            parameterArray("Wymagania", Color.lightSteelBlue, state.requirements)
         }
     }
 }
