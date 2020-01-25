@@ -89,7 +89,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                 Parameter(name = "Moc grzałki", unit = "W", minValue = 1, maxValue = 12, scale = 500.0),
                 Parameter(name = "Sprawność grzałki", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
                 Parameter(name = "Współczynnik straty energii", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
-                Parameter(name = "Krok czasu", unit = "s", minValue = 1, maxValue = 60, scale = 60.0, curValue = 1)
+                Parameter(name = "Krok czasu", unit = "min", minValue = 1, maxValue = 60, curValue = 1, normalizationCoefficient = 60.0)
         )
 
         requirements = arrayOf(
@@ -269,7 +269,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
         val hours = state.simulationTime / 3600
         val minutes = state.simulationTime % 3600 / 60
         div("grid-timer") {
-            div("name") { +"Boiler Runtime:" }
+            div("name") { +"Czas pracy:" }
             div("value") { code("bigger") { if (hours > 0) +hours.toString() } }
             div("unit") { if (hours > 0) +"[h]" }
             div("value") { code("bigger") { +minutes.toString() } }
@@ -289,7 +289,6 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                             row("Moc grzałki", state.currentPower, "W")
                             row("Dopływ wody", state.currentInflow.times(1000), "l/s")
                             row("Odpływ wody", state.currentOutflow.times(1000), "l/s")
-                            row("Czas pracy bojlera", state.simulationTime.toDouble(), "s")
                         }
                         timer()
                         button {

@@ -26,20 +26,11 @@ interface CanvasProps : RProps {
 }
 
 class Canvas : RComponent<CanvasProps, RState>() {
-    private var timerID: Int? = null
-
-    override fun componentDidMount() {
-        timerID = window.setInterval({ repaint() }, 100)
-    }
-
-    override fun componentWillUnmount() {
-        timerID?.let { window.clearInterval(it) }
-    }
-
     private fun color(temperature: Double): String = "rgb(${(temperature + 20) * 2.56}, 0, ${(80 - temperature) * 2.56})"
+    private val canvasID = "myCanvas"
 
-    private fun repaint() {
-        val canvas = document.getElementById("myCanvas") as? HTMLCanvasElement
+    private fun paintTheCanvas() {
+        val canvas = document.getElementById(canvasID) as? HTMLCanvasElement
         with(canvas?.getContext("2d")!! as CanvasRenderingContext2D) {
             val width = canvas.width.toDouble()
             val height = canvas.height.toDouble()
@@ -48,6 +39,7 @@ class Canvas : RComponent<CanvasProps, RState>() {
             fillStyle = color(props.temperature)
             fillRect(0.0, height * (1 - props.level / 2), width, height)
         }
+        window.requestAnimationFrame { paintTheCanvas() }
     }
 
     override fun RBuilder.render() {
@@ -56,8 +48,9 @@ class Canvas : RComponent<CanvasProps, RState>() {
                 classes.plusAssign("boiler-canvas")
                 border(2.px, BorderStyle.solid, Color.black)
             }
-            attrs.id = "myCanvas"
+            attrs.id = canvasID
         }
+        window.requestAnimationFrame { paintTheCanvas() }
     }
 }
 
