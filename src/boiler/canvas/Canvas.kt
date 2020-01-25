@@ -37,9 +37,12 @@ class Canvas : RComponent<CanvasProps, RState>() {
     private fun repaint() {
         val canvas = document.getElementById("myCanvas") as? HTMLCanvasElement
         with(canvas?.getContext("2d")!! as CanvasRenderingContext2D) {
-            clearRect(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
+            val width = canvas.width.toDouble()
+            val height = canvas.height.toDouble()
+            clearRect(0.0, 0.0, width, height)
             lineWidth = 1.0
-            fillText(props.level.toString(), 50.0, 50.0)
+            fillStyle = "blue"
+            fillRect(0.0, height * (1 - props.level / 2), width, height)
         }
     }
 
