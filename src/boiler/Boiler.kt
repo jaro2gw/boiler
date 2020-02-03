@@ -89,7 +89,7 @@ class Boiler(props: BoilerProps) : RComponent<BoilerProps, BoilerState>(props) {
                 Parameter(name = "Moc grzałki", unit = "W", minValue = 1, maxValue = 12, scale = 500.0),
                 Parameter(name = "Sprawność grzałki", unit = "%", minValue = 15, maxValue = 20, scale = 5.0, normalizationCoefficient = 0.01),
                 Parameter(name = "Współczynnik straty energii", unit = "W", minValue = 0, maxValue = 5, scale = 100.0, curValue = 1),
-                Parameter(name = "Krok czasu", unit = "min", minValue = 1, maxValue = 60, curValue = 1, normalizationCoefficient = 60.0)
+                Parameter(name = "Krok czasu", unit = "min/s", minValue = 1, maxValue = 60, curValue = 1, normalizationCoefficient = 60.0)
         )
 
         requirements = arrayOf(
